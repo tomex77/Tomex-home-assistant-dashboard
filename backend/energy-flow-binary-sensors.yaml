@@ -1,0 +1,73 @@
+template:
+- binary_sensor:
+  - name: "my_home_battery_charging"
+    unique_id: my_home_battery_charging
+    device_class: battery_charging
+    state: "{{ states('sensor.my_home_battery_power') | float(0) < 0 }}"
+
+- binary_sensor:
+        # --- SOLAR → HOUSE ---
+        # If solar > 0, electrons are flowing into the home's AC bus.
+  - name: "solar_to_house"
+    state: >
+      {% set solar = states('sensor.my_home_solar_power') | float(0) %}
+      {% set grid  = states('sensor.my_home_grid_power') | float(0) %}
+      {% set battery = states('sensor.my_home_battery_power') | float(0) %}
+      {% set charging = battery if battery < 0 else 0 %}
+      {% set remaining_solar = solar + grid + charging %}
+      {{ solar > 0.1 and remaining_solar > 0.1 }}
+
+
+
+        # --- SOLAR → BATTERY ---
+        # Solar charges battery ONLY if solar is producing AND battery is charging.
+        # We don't care about the grid here; if solar is 5kW and battery is charging 2kW, 
+        # solar is doing that work regardless of what the grid is doing.
+  - name: "solar_to_battery"
+    state: >
+      {% set solar = states('sensor.my_home_solar_power') | float(0) %}
+      {% set batt = states('sensor.my_home_battery_power') | float(0) %}
+      {{ solar > 0.05 and batt < -0.05 }}
+
+        # --- SOLAR → GRID ---
+        # Solar is the ONLY thing that can export in a standard residential setup.
+  - name: "solar_to_grid"
+    state: >
+      {% set solar = states('sensor.my_home_solar_power') | float(0) %}
+      {% set grid = states('sensor.my_home_grid_power') | float(0) %}
+      {{ solar > 0.05 and grid < -0.05 }}
+
+        # --- BATTERY → HOUSE ---
+  - name: "battery_to_house"
+    state: >
+      {% set batt = states('sensor.my_home_battery_power') | float(0) %}
+      {{ batt > 0.05 }}
+
+        # --- GRID → HOUSE ---
+        # If grid is importing AND (Solar + Battery Discharge) is less than the House Load.
+  - name: "grid_to_house"
+    state: >
+      {% set grid = states('sensor.my_home_grid_power') | float(0) %}
+      {% set load = states('sensor.my_home_load_power') | float(0) %}
+      {% set solar = states('sensor.my_home_solar_power') | float(0) %}
+      {% set batt = states('sensor.my_home_battery_power') | float(0) %}
+      {% set batt_discharge = batt if batt > 0 else 0 %}
+      {{ grid > 0.05 and load > (solar + batt_discharge) }}
+
+        # --- GRID → BATTERY ---
+        # This is the "Red Line" logic. Only true if battery is charging AND grid is importing.
+  - name: "grid_to_battery"
+    state: >
+      {% set grid = states('sensor.my_home_grid_power') | float(0) %}
+      {% set batt = states('sensor.my_home_battery_power') | float(0) %}
+      {% set solar = states('sensor.my_home_solar_power') | float(0) %}
+      {# If battery is charging more than solar is producing, the grid MUST be helpng #}
+      {{ batt < -0.05 and grid > 0.05 and (solar + batt) < 0 }}
+
+
+
+
+
+
+
+

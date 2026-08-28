@@ -1,0 +1,149 @@
+template:
+- sensor:
+      # --- CLIMATE LOGIC ---
+  - name: "Dashboard Climate Status"
+    state: >
+      {% set downstairs = state_attr('climate.downstairs', 'hvac_action') != 'idle' %} {% set bedrooms = state_attr('climate.bedrooms', 'hvac_action') != 'idle' %} {% set master = state_attr('climate.master', 'hvac_action') != 'idle' %} {% set attic = states('climate.ac') in ['heat', 'dry', 'cool', 'fan_only', 'auto'] %} {% set hvac_count = (downstairs|int) + (bedrooms|int) + (master|int) %} {% set fan_count = states('sensor.count_fan_on') | int(0) %} {% set fireplace_pwr = states('sensor.fireplace_switch_0_power') | float(0) %} {% set fireplace_on = 1 if (is_state('switch.fireplace', 'on') or (2.3 < fireplace_pwr < 50) or (700 < fireplace_pwr < 1600)) else 0 %}
+
+      {% set parts = [] %} {% if attic %}{% set parts = parts + ['Attic+' ~ hvac_count if hvac_count > 0 else 'Attic on'] %}{% elif hvac_count > 0 %}{% set parts = parts + [hvac_count ~ ' running'] %}{% endif %} {% if fan_count > 0 %}{% set parts = parts + ['Fans: ' ~ fan_count] %}{% endif %} {% if fireplace_on > 0 %}{% set parts = parts + ['Fireplace on'] %}{% endif %} {{ parts | join(', ') if parts | length > 0 else 'All idle' }}
+    attributes:
+      hvac_total: >
+        {{ (state_attr('climate.downstairs', 'hvac_action') != 'idle')|int + (state_attr('climate.bedrooms', 'hvac_action') != 'idle')|int + (state_attr('climate.master', 'hvac_action') != 'idle')|int + (states('climate.ac') in ['heat', 'dry', 'cool', 'fan_only', 'auto'])|int }}
+      fan_on: "{{ states('sensor.count_fan_on') | int(0) > 0 }}"
+      exhaust_fan_on: >
+        {{ is_state('fan.bathroom_fan', 'on') or is_state('fan.exhaust_fan', 'on') }}
+      regular_fan_on: >
+        {% set total = states('sensor.count_fan_on') | int(0) %} {% set exhaust = (is_state('fan.bathroom_fan', 'on') | int) + (is_state('fan.exhaust_fan', 'on') | int) %} {{ (total - exhaust) > 0 }}
+
+      # --- NOTIFICATION LOGIC ---
+  - name: "Dashboard Home Notification"
+    state: >
+      {% set t = states('counter.trash_counter') | int(0) == 1 %} {% set m = states('counter.mailbox') | int(0) == 1 %} {% set a = states('counter.notification') | int(0) > 0 %} {% if t and m and a %} Trash, Mail & Alert {% elif t and m %} Trash & Mail {% elif t and a %} Trash & Alert {% elif m and a %} Mail & Alert {% elif t %} Trash Day {% elif m %} Mail delivered {% elif a %} Alert! {% else %} No notifications {% endif %}
+    attributes:
+      alert_count: >
+        {{ (states('counter.trash_counter')|int > 0)|int + (states('counter.mailbox')|int > 0)|int + (states('counter.notification')|int > 0)|int }}          
+
+      # --- LIGHTS & SWITCHES LOGIC ---
+  - name: "Dashboard Lights Status"
+    state: >
+      {% set count = states('sensor.count_lights_on') | int(0) %} {% if count == 0 %} No lights on {% elif count == 1 %} 1 light is on {% else %} {{ count }} lights are on {% endif %}
+    attributes:
+      count: "{{ states('sensor.count_lights_on') | int(0) }}"
+
+      # --- CAMERA LOGIC ---
+  - name: "Dashboard Camera Status"
+    state: >
+      {% if is_state('input_boolean.visitor', 'on') %} Someone at the door {% elif is_state('binary_sensor.front_doorbell_reolink_motion', 'on') %} Motion at the door {% else %} No activity {% endif %}
+    attributes:
+      visitor: "{{ is_state('input_boolean.visitor', 'on') }}"
+      motion: "{{ is_state('binary_sensor.front_doorbell_reolink_motion', 'on') }}"
+
+      # --- LOCKS ---
+  - name: "Dashboard Locks Status"
+    state: >
+      {% set f = is_state('lock.front_door', 'unlocked') %} {% set g = is_state('lock.garage_door', 'unlocked') %} {% set b = is_state('lock.touchscreen_deadbolt', 'unlocked') %} {% if f and g and b %} Front, back & garage unlocked {% elif f and g %} Front & garage unlocked {% elif f and b %} Front & back unlocked {% elif g and b %} Garage & back unlocked {% elif f %} Front unlocked {% elif g %} Garage unlocked {% elif b %} Back unlocked {% else %} All locked {% endif %}
+    attributes:
+      unlocked_count: >
+        {{ [states('lock.front_door'), states('lock.garage_door'), states('lock.touchscreen_deadbolt')] | select('eq', 'unlocked') | list | count }}
+
+      # --- COVERS ---
+  - name: "Dashboard Covers Status"
+    state: >
+      {% set g1, g2 = states('cover.garage1'), states('cover.garage2') %} {% set p1 = state_attr('cover.garage1', 'current_position') %} {% set p2 = state_attr('cover.garage2', 'current_position') %} {% if g1 in ['open', 'opening', 'closing'] and g2 in ['open', 'opening', 'closing'] %}
+        {% if g1 == 'opening' or g2 == 'opening' %}
+          Garage 1 & 2 Opening
+        {% elif g1 == 'closing' or g2 == 'closing' %}
+          Garage 1 & 2 Closing
+        {% elif p1 not in [none, 100] or p2 not in [none, 100] %}
+          {% set avg = (((p1 | default(100)) + (p2 | default(100))) / 2) | round %}
+          G1 & G2 - {{ avg }}% open
+        {% else %}
+          Garage 1 & 2 open
+        {% endif %}
+      {% elif g1 in ['open', 'opening', 'closing'] %}
+        Garage 1 {{ '- ' ~ p1 ~ '% open' if p1 not in [none, 100] else g1 | capitalize }}
+      {% elif g2 in ['open', 'opening', 'closing'] %}
+        Garage 2 {{ '- ' ~ p2 ~ '% open' if p2 not in [none, 100] else g2 | capitalize }}
+      {% else %}
+        All closed
+      {% endif %}
+    attributes:
+      any_open: "{{ is_state('cover.garage1', 'open') or is_state('cover.garage2', 'open') }}"
+      moving: "{{ states('cover.garage1') in ['opening','closing'] or states('cover.garage2') in ['opening','closing'] }}"
+      current_position: >
+        {% set p1 = state_attr('cover.garage1', 'current_position') %} {% set p2 = state_attr('cover.garage2', 'current_position') %} {% if p1 not in [none, 100] and p2 not in [none, 100] %}
+          G1: {{ p1 }}% / G2: {{ p2 }}%
+        {% elif p1 not in [none, 100] %}
+          G1: {{ p1 }}%
+        {% elif p2 not in [none, 100] %}
+          G2: {{ p2 }}%
+        {% else %}
+          none
+        {% endif %}
+
+      # --- ALARM ---
+  - name: "Dashboard Alarm Status"
+    state: "{{ states('alarm_control_panel.home_alarm') | title }}"
+
+      # --- MEDIA ---
+  - name: "Dashboard Media Status"
+    state: >
+      {% set spot = states('media_player.spotify') %} {% set tvs = states('sensor.tvon') | int(0) %} {% if spot in ['playing', 'paused'] and tvs > 0 %} Spotify: {{ spot | capitalize }} | TVs: {{ tvs }} {% elif spot in ['playing', 'paused'] %} Spotify: {{ spot | capitalize }} {% elif tvs > 0 %} TVs: {{ tvs }} {% else %} All off {% endif %}
+    attributes:
+      tv_count: "{{ states('sensor.tvon') | int(0) }}"
+      spotify_playing: "{{ is_state('media_player.spotify', 'playing') }}"
+
+      # --- DOORS ---
+  - name: "Dashboard Doors Status"
+    state: >
+      {% set front = is_state('binary_sensor.front_door', 'on') %} {% set back = is_state('binary_sensor.back_door', 'on') %} {% set shed = is_state('binary_sensor.shed', 'on') %} {% set balcony = is_state('binary_sensor.balcony_door', 'on') %} {% set garage = is_state('binary_sensor.garage_door', 'on') %} {% set backyard = is_state('binary_sensor.backyard_side_door', 'on') %} {% set doors = [('Front', front), ('Back', back), ('Shed', shed), ('Balcony', balcony), ('Garage', garage),  ('Backyard', backyard)] %} {% set open = doors | selectattr('1', 'eq', true) | map(attribute='0') | list %} {% if open | length == 0 %} All closed {% elif open | length == 1 %} {{ open[0] }} open {% else %} {{ open[:-1] | join(', ') }} & {{ open[-1] }} open {% endif %}
+    attributes:
+      any_open: "{{ states('sensor.count_doors_open') != 'No doors open.' }}"
+
+      # --- SENSORS (Leak, Smoke, Motion) ---
+  - name: "Dashboard Sensors Status"
+    state: >
+      {% set leak = [is_state('binary_sensor.water_heater_leak_sensor_moisture', 'on'), is_state('binary_sensor.kitchen_leak_sensor_moisture', 'on')] | select('eq', true) | list | count %} {% set smoke = is_state('binary_sensor.combination_alarm_smoke', 'on') or is_state('binary_sensor.combination_alarm_2_smoke', 'on') or is_state('binary_sensor.combination_alarm_3_smoke', 'on') %} {% set co = (states('sensor.combination_alarm_carbon_monoxide')|float(0) > 0) or (states('sensor.combination_alarm_2_carbon_monoxide')|float(0) > 0) or (states('sensor.combination_alarm_3_carbon_monoxide')|float(0) > 0) %} {% set motion = states('sensor.count_motion_on') %} {% set parts = [] %} {% if leak > 0 %}{% set parts = parts + ['Leak: ' ~ leak] %}{% endif %} {% if smoke %}{% set parts = parts + ['Smoke'] %}{% endif %} {% if co %}{% set parts = parts + ['CO'] %}{% endif %} {{ (parts | join(', ') ~ ', ' if parts | length > 0 else '') ~ motion }}
+    attributes:
+      leak_count: "{{ [is_state('binary_sensor.water_heater_leak_sensor_moisture', 'on'), is_state('binary_sensor.kitchen_leak_sensor_moisture', 'on')] | select('eq', true) | list | count }}"
+      fire_alert: "{{ is_state('binary_sensor.combination_alarm_smoke', 'on') or is_state('binary_sensor.combination_alarm_2_smoke', 'on') or is_state('binary_sensor.combination_alarm_3_smoke', 'on') or states('sensor.combination_alarm_carbon_monoxide')|float(0) > 0 }}"
+      motion_detected: "{{ states('sensor.count_motion_on') not in ['0', 'No motion detected', 'unknown', 'unavailable', ''] }}"
+
+      # --- VACUUM ---
+  - name: "Dashboard Vacuum Status"
+    state: >
+      {% set s, m, b = states('vacuum.deebot'), states('binary_sensor.mop'), states('sensor.deebot_battery') %} {% if s in ['unavailable', 'unknown'] %} Offline | 0% {% elif m == 'on' and s == 'cleaning' %} Mopping | {{ b }}% {% else %} {{ s | title }} | {{ b }}% {% endif %}
+    attributes:
+      cleaning: "{{ is_state('vacuum.deebot', 'cleaning') }}"
+      offline: "{{ states('vacuum.deebot') in ['unavailable', 'unknown'] }}"
+
+      # --- BLINDS ---
+  - name: "Dashboard Blinds Status"
+    state: >
+      {% set l1 = state_attr('cover.window_blinds', 'current_position') | int(0) %} {% set l2 = state_attr('cover.living_2_blinds', 'current_position') | int(0) %} {% if l1 > 98 and l2 > 98 %} All Open {% elif l1 <= 3 and l2 <= 3 %} All Closed {% elif l1 <= 3 and l2 > 98 %} L1: Closed L2: Open {% elif l1 <= 3 and l2 > 3 and l2 <= 98 %} L1: Closed L2: Partial {% elif l1 > 98 and l2 <= 3 %} L1: Open L2: Closed {% elif l1 > 98 and l2 > 3 and l2 <= 98 %} L1: Open L2: Partial {% elif l1 > 3 and l1 <= 98 and l2 > 98 %} L1: Partial L2: Open {% elif l1 > 3 and l1 <= 98 and l2 <= 3 %} L1: Partial L2: Closed {% elif l1 > 3 and l1 <= 98 and l2 > 3 and l2 <= 98 %} L1 & L2: Partial {% else %} Unknown {% endif %}
+
+      # --- LAUNDRY ---
+  - name: "Dashboard Laundry Status"
+    state: >
+      {% set p = states('sensor.athom_washer_power') | float(0) %} {% set w_run = p > 5.7 %} {% set w_on = 0.5 < p < 2.0 %} {% set d = is_state('binary_sensor.dryer', 'on') %} {% set i = is_state('switch.ironing_table', 'on') %} {% if w_run and d and i %} Washer, Dryer & Iron on {% elif w_run and d %} Washer & Dryer on {% elif w_run and i %} Washer & Iron on {% elif d and i %} Dryer & Iron on {% elif w_run %} Washer Running {% elif w_on %} Washer On {% elif d %} Dryer Running {% elif i %} Iron on {% else %} All Off {% endif %}
+    attributes:
+      active_count: >
+        {% set p = states('sensor.athom_washer_power') | float(0) %} {{ (1 if p > 0.5 else 0) + (1 if is_state('binary_sensor.dryer', 'on') else 0) + (1 if is_state('switch.ironing_table', 'on') else 0) }}
+      iron_on: "{{ is_state('switch.ironing_table', 'on') }}"
+
+      # --- BED ---
+  - name: "Dashboard Bed Status"
+    state: >
+      {% set t = is_state('binary_sensor.person_1_in_bed', 'on') %} {% set f = is_state('binary_sensor.person_2_in_bed', 'on') %} {{ 'Occupied' if t or f else 'Unoccupied' }}
+    attributes:
+      occupied: "{{ is_state('binary_sensor.person_1_in_bed', 'on') or is_state('binary_sensor.person_2_in_bed', 'on') }}"
+
+      # --- IRRIGATION ---
+  - name: "Dashboard Irrigation Status"
+    state: >
+      {% set l = is_state('input_boolean.lawn', 'on') %} {% set s = is_state('switch.rain_bird_sprinkler_side', 'on') or is_state('switch.rain_bird_sprinkler_front_main', 'on') %} {{ 'Lawn care due' if l else 'Watering' if s else 'Off' }}
+    attributes:
+      mowing: "{{ is_state('input_boolean.lawn', 'on') }}"
+      watering: "{{ is_state('switch.rain_bird_sprinkler_side', 'on') or is_state('switch.rain_bird_sprinkler_front_main', 'on') }}"
+
+

@@ -1,0 +1,148 @@
+template:
+- sensor:
+      # SOLAR COLOR LOGIC
+  - name: "Solar Status Color"
+    state: >
+      {% set v = states('sensor.my_home_solar_power') | float(0) %} {% if v >= 6.0 %} #35cf02 {% elif v >= 3.9 %} #f7ca25 {% elif v > 0 %} #BF3530 {% else %} transparent {% endif %}
+
+      # BATTERY STATUS (COLOR & ANIMATION)
+  - name: "Battery Pulse Animation"
+    state: >
+      {% if is_state('binary_sensor.my_home_battery_charging', 'on') %}
+        pulse 1.2s ease-in-out infinite
+      {% else %}
+        none
+      {% endif %}
+
+      # LOAD POWER COLOR
+  - name: "Load Power Color"
+    state: >
+      {% set v = states('sensor.my_home_load_power') | float(0) %} {% if v <= 3 %} #8f5050 {% elif v <= 6 %} #9c3e3e {% else %} #d61313 {% endif %}
+
+      # GRID POWER COLOR
+  - name: "Grid Power Color"
+    state: >
+      {% set v = states('sensor.my_home_grid_power') | float(0) %} {% if v > 0 %} #C4A076 {% elif v < 0 %} #C1C71E {% else %} transparent {% endif %}
+
+
+- sensor:
+      # --- SOLAR FLOWS ---
+  - name: "Solar Flow Style"
+    state: >
+      {% if states('sensor.my_home_solar_power') | float(0) > 0.1 %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,153,0,1) 45%, rgba(255,153,0,0.9) 48%, rgba(255,153,0,0.4) 60%, rgba(255,153,0,0.15) 75%, rgba(255,153,0,0.05) 88%, transparent 100%)
+      {% else %} none {% endif %}
+
+
+
+  - name: "Solar House Flow Style"
+    state: >
+      {% if is_state('binary_sensor.solar_to_house', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,153,0,1) 45%, rgba(255,153,0,0.9) 48%, rgba(255,153,0,0.4) 60%, rgba(255,153,0,0.15) 75%, rgba(255,153,0,0.05) 88%, transparent 100%)
+      {% else %} none {% endif %}
+
+  - name: "Solar Battery Flow Style"
+    state: >
+      {% if is_state('binary_sensor.solar_to_battery', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,198,0,1) 45%, rgba(255,198,0,0.9) 48%, rgba(255,198,0,0.4) 60%, rgba(255,198,0,0.15) 75%, rgba(255,198,0,0.05) 88%, transparent 100%)
+      {% else %} none {% endif %}
+
+      # --- GRID FLOWS ---
+  - name: "Grid House Only Flow Style"
+    state: >
+      {% if is_state('binary_sensor.grid_to_house', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,0,0,1) 42%, rgba(255,0,0,0.9) 46%, rgba(255,0,0,0.4) 60%, rgba(255,0,0,0.15) 75%, rgba(255,0,0,0.05) 88%, transparent 100%)
+      {% else %}
+        none
+      {% endif %}
+        
+  - name: "Solar Grid Export Flow Style"
+    state: >
+      {% if is_state('binary_sensor.grid_to_house', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,0,0,1) 45%, rgba(255,0,0,0.9) 48%, rgba(255,0,0,0.4) 60%, rgba(255,0,0,0.15) 75%, rgba(255,0,0,0.05) 88%, transparent 100%)
+      {% elif is_state('binary_sensor.solar_to_grid', 'on') %}
+        linear-gradient(270deg, transparent 0%, transparent 35%, rgba(255,165,0,1) 45%, rgba(255,165,0,0.9) 48%, rgba(255,165,0,0.4) 60%, rgba(255,165,0,0.15) 75%, rgba(255,165,0,0.05) 88%, transparent 100%)
+      {% else %}
+        none
+      {% endif %}
+
+      # ← NEW: controls animation direction for grid line
+  - name: "Grid Battery Flow Style"
+    state: >
+      {% if is_state('binary_sensor.grid_to_battery', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(255,0,0,1) 45%, rgba(255,0,0,0.9) 48%, rgba(255,0,0,0.4) 60%, rgba(255,0,0,0.15) 75%, rgba(255,0,0,0.05) 88%, transparent 100%)
+      {% else %} none {% endif %}
+
+      # --- BATTERY FLOWS ---
+  - name: "Battery House Flow Style"
+    state: >
+      {% if is_state('binary_sensor.battery_to_house', 'on') %}
+        linear-gradient(90deg, transparent 0%, transparent 35%, rgba(0,255,200,1) 45%, rgba(0,255,200,0.9) 48%, rgba(0,255,200,0.4) 60%, rgba(0,255,200,0.15) 75%, rgba(0,255,200,0.05) 88%, transparent 100%)
+      {% else %} none {% endif %}
+
+      # --- LABELS ---
+  - name: "Solar Power Label"
+    state: >
+      {% set v = states('sensor.my_home_solar_power') | float(0) %} {{ (v | round(1) | string + ' kW') if v > 0 else '' }}
+
+  - name: "Grid Power Label"
+    state: >
+      {% set v = states('sensor.my_home_grid_power') | float(0) %} {{ (v | round(1) | string + ' kW') if v != 0 else '' }}
+
+  - name: "Load Power Label"
+    state: >
+      {% set v = states('sensor.my_home_load_power') | float(0) %} {{ (v | round(1) | string + ' kW') if v > 0 else '' }}     
+  - name: "Garage Light Glow Style"
+    state: >
+      {% if is_state('light.garage', 'on') %}
+        1
+      {% else %}
+        0
+      {% endif %}
+
+  - name: "Front Porch Glow Style"
+    state: >
+      {% if is_state('light.front_porch', 'on') %}
+        radial-gradient(circle, rgba(255, 230, 150, 0.9) 0%, rgba(255, 230, 150, 0.4) 40%, rgba(255, 230, 150, 0.0) 70%)
+      {% else %}
+        none
+      {% endif %}
+
+  - name: "Driveway Light Glow Style"
+    state: >
+      {% if is_state('light.driveway', 'on') %}
+        radial-gradient(circle, rgba(255, 230, 150, 0.9) 0%, rgba(255, 230, 150, 0.4) 40%, rgba(255, 230, 150, 0.0) 70%)
+      {% else %}
+        none
+      {% endif %}
+
+  - name: "Living Room Overlay Opacity"
+    state: >
+      {# Note: Your original logic showed the image when the light was OFF #} {% if is_state('light.living_room_lights', 'off') %}
+        0.8
+      {% else %}
+        0
+      {% endif %}
+
+  - name: "Weather Overlay Combined"
+    state: >
+      {% set weather = states('weather.home') %} {% if weather in ['rainy', 'pouring', 'lightning-rainy'] %}
+        url("/local/raining.gif")
+      {% elif weather == 'lightning' %}
+        url("/local/light.png")
+      {% elif weather == 'cloudy' %}
+        url("/local/cloudyw.webp"), url("/local/cloudyw.webp")
+      {% elif weather == 'partlycloudy' %}
+        url("/local/cloudyw.webp")
+      {% elif weather == 'snowy-rainy' %}
+        url("/local/rain3w.webp"), url("/local/snoww.webp")
+      {% elif weather == 'snowy' %}
+        url("/local/snoww.webp")
+      {% elif weather == 'fog' %}
+        url("/local/fog2.png")
+      {% elif weather == 'sunny' or weather == 'exceptional' %}
+        url("/local/sun2w.webp")
+      {% else %}
+        none
+      {% endif %}
+

@@ -1,0 +1,39 @@
+template:
+- sensor:
+  - default_entity_id: sensor.current_day_and_date
+    name: Current_Day_and_Date
+    state: "{% set day = now().day %} {% set suffix = 'th' %} {% if day in [1, 21, 31] %}\n  {% set suffix = 'st' %}\n{% elif day in [2, 22] %}\n  {% set suffix = 'nd' %}\n{% elif day in [3, 23] %}\n  {% set suffix = 'rd' %}\n{% endif %} {{ now().strftime('%a, %b ') }}{{ day }}{{ suffix }}."
+
+- sensor:
+  - default_entity_id: sensor.next_holiday_sensor
+    name: Next Holiday
+    state: '{{ state_attr(''calendar.holidays_in_united_states'', ''message'') }}'
+
+- sensor:
+  - default_entity_id: sensor.count_motion_on
+    icon: mdi:walk
+    name: '# motion on'
+    state: "{% set motion = expand('binary_sensor.living_room', 'binary_sensor.dining_room_motion', 'binary_sensor.upstairs_hallway_motion', 'binary_sensor.downstairs_hallway_motion_detection', 'binary_sensor.living_room_2_motion', 'binary_sensor.guest_room_motion_motion_2', 'binary_sensor.closet_motion_motion_2', 'binary_sensor.motion_detector_sensor_state_any', 'binary_sensor.room_1_motion', 'binary_sensor.room_2_motion', 'binary_sensor.garage_motion_motion_2', 'binary_sensor.office_1_presence', 'binary_sensor.office_2_motion', 'binary_sensor.laundry_motion', 'binary_sensor.ring_motion' )\n        | selectattr('state', 'eq', 'on')\n        | map(attribute='name') | list %}\n{% set qty = motion | count %} {% set p1 = 'motion' %}\n{% if qty == 0 %} \n No motion detected\n{% else %}\n {{ qty }} {{ p1 }} detected\n{% endif %}"
+
+- sensor:
+  - unit_of_measurement: ''
+    default_entity_id: sensor.count_lights_on
+    icon: mdi:lightbulb
+    name: '# Lights on'
+    state: "{{\n   states.light\n   | selectattr('state', 'eq', 'on')\n   | rejectattr('entity_id', 'search', '_basic') \n   | rejectattr('entity_id', 'eq', 'light.island')\n   | list\n   | count\n}}"
+
+- sensor:
+  - unit_of_measurement: fans on
+    default_entity_id: sensor.count_fan_on
+    icon: mdi:fan
+    name: '# fan on'
+    state: "{{ \n states.fan |\n   selectattr('entity_id', 'search', '_fan')  |\n   selectattr('state','eq','on') |\n   list | \n   count \n}}"
+
+- binary_sensor:
+      # --- LIGHT OVERLAYS ---
+      # Offloading the "Off" state check for the image overlays
+  - name: "Window1 Overlay"
+    state: "{{ is_state('light.room_1', 'off') }}"
+
+  - name: "Window2 Overlay"
+    state: "{{ is_state('light.room_2', 'off') }}"
