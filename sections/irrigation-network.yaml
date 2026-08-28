@@ -1,0 +1,47 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Irrigation
+            secondary: '{{ states(''sensor.dashboard_irrigation_status'') }}'
+            icon: mdi:sprinkler-variant
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_irrigation_status', 'mowing') |
+              bool(false) %} mdi:mower
+
+              {% elif state_attr('sensor.dashboard_irrigation_status',
+              'watering') | bool(false) %} mdi:water
+
+              {% else %} none {% endif %}
+            badge_color: >-
+              {{ '#367c1d' if state_attr('sensor.dashboard_irrigation_status',
+              'mowing') | bool(false) else '#1d677c' if
+              state_attr('sensor.dashboard_irrigation_status', 'watering') |
+              bool(false) else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#lawn'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }
+          - type: custom:mushroom-template-card
+            primary: Network
+            secondary: >-
+              Speed: {{ states('sensor.speedtest_download')| float(0) | round(0)
+              }} Mb/s
+            icon: mdi:network
+            badge_icon: >-
+              {{ 'mdi:nas' if is_state('switch.wake_on_lan', 'on') else 'none'
+              }}
+            badge_color: >-
+              {{ '#1d677c' if is_state('switch.wake_on_lan', 'on') else
+              'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#network'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }

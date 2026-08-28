@@ -1,0 +1,103 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: 3D printer
+            secondary: >
+              {% set stage = states('sensor.your_3d_printer_current_stage')
+              %} {% set time =
+              states('sensor.your_3d_printer_remaining_time') | float(0) %}
+
+              {{ stage | replace('_', ' ') | title() }}
+
+              {% if stage == 'printing' %}
+                ({% if time < 2 %}{{ (time * 60) | round(0) }} min left{% else %}{{ time | round(1) }} hrs left{% endif %}){% endif %}
+            icon: mdi:printer-3d
+            badge_icon: |-
+              {% set s = states('sensor.your_3d_printer_current_stage') %}
+              {{ 'mdi:pencil' if s == 'printing' else 'none' }}
+            badge_color: |-
+              {% set s = states('sensor.your_3d_printer_current_stage') %}
+              {{ 'blue' if s == 'printing' else 'none' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#print'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: tilt-shake 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes tilt-shake { 0%, 50%, 100% { transform:
+                  rotate(-10deg); } 25% { transform: rotate(-30deg); } 75% {
+                  transform: rotate(-4deg); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Media
+            secondary: '{{ states(''sensor.dashboard_media_status'') }}'
+            icon: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool %}
+
+              {% if tvs > 0 %} mdi:television
+
+              {% elif spot %} mdi:spotify
+
+              {% else %} mdi:television
+
+              {% endif %}
+            badge_icon: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool(false) %}
+
+              {% if tvs > 0 and spot %} mdi:spotify
+
+              {% elif tvs > 0 or spot %} mdi:play
+
+              {% else %} none
+
+              {% endif %}
+            badge_color: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool(false) %}
+
+              {% if tvs > 0 %} #1d677c
+
+              {% elif spot %} #367c1d
+
+              {% else %} rgba(0,0,0,0)
+
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#media'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon {
+                    animation: magnify 3s ease-in-out infinite;
+                    transform-origin: center;
+                  }
+                  @keyframes magnify {
+                    0%, 100% { transform: scale(0.7); }
+                    50% { transform: scale(1.1); }
+                  }
+                .: |
+                  ha-card {
+                    color: white;
+                    background: none;
+                    box-shadow: none;
+                    border: none;
+                  }

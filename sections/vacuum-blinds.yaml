@@ -1,0 +1,66 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Vacuum
+            secondary: '{{ states(''sensor.dashboard_vacuum_status'') }}'
+            icon: mdi:robot-vacuum
+            badge_icon: >-
+              {{ 'mdi:play' if state_attr('sensor.dashboard_vacuum_status',
+              'cleaning')|bool(false) else 'mdi:exclamation-thick' if
+              state_attr('sensor.dashboard_vacuum_status',
+              'offline')|bool(false) else 'none' }}
+            badge_color: >-
+              {{ '#367c1d' if state_attr('sensor.dashboard_vacuum_status',
+              'cleaning')|bool(false) else '#BF3530' if
+              state_attr('sensor.dashboard_vacuum_status',
+              'offline')|bool(false) else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#vacuum'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes heartbeat { 0%, 20%, 100% { transform: scale(0.8);
+                  } 10%, 30% { transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Blinds
+            secondary: '{{ states(''sensor.dashboard_blinds_status'') }}'
+            icon: mdi:blinds
+            badge_icon: >-
+              {% set l1_open = state_attr('cover.window_blinds',
+              'current_position') | int(0) > 3 %} {% set l2_open =
+              is_state('cover.living_2_blinds', 'open') %}
+
+              {# Calculate count: true converts to 1, false to 0 #} {% set count
+              = (1 if l1_open else 0) + (1 if l2_open else 0) %}
+
+              {{ 'mdi:numeric-' ~ count if count > 0 else 'none' }}
+            badge_color: >-
+              {% set l1_open = state_attr('cover.window_blinds',
+              'current_position') | int(0) > 3 %} {% set l2_open =
+              is_state('cover.living_2_blinds', 'open') %} {% set count = (1 if
+              l1_open else 0) + (1 if l2_open else 0) %}
+
+              {{ '#985f1c' if count > 0 else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#blinds'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 1.7s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }

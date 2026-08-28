@@ -1,0 +1,67 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Laundry
+            secondary: '{{ states(''sensor.dashboard_laundry_status'') }}'
+            icon: mdi:washing-machine
+            badge_icon: >-
+              {% set count = state_attr('sensor.dashboard_laundry_status',
+              'active_count') | int(0) %}
+
+              {{ 'mdi:numeric-' ~ count if count > 0 else 'none' }}
+            badge_color: >-
+              {% if state_attr('sensor.dashboard_laundry_status', 'iron_on') |
+              bool(false) %} #BF3530
+
+              {% elif state_attr('sensor.dashboard_laundry_status',
+              'active_count') | int(0) > 0 %} #1d677c
+
+              {% else %} rgba(0,0,0,0) {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#laundry'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }
+          - type: custom:mushroom-template-card
+            primary: Bed
+            secondary: '{{ states(''sensor.dashboard_bed_status'') }}'
+            icon: mdi:bed
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_bed_status', 'occupied') |
+              bool(false) %} 
+                mdi:sleep
+              {% else %} 
+                none 
+              {% endif %}
+            badge_color: >-
+              {% if state_attr('sensor.dashboard_bed_status', 'occupied') |
+              bool(false) %}
+                #367c1d
+              {% else %}
+                rgba(0,0,0,0)
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#bed'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon {
+                    animation: magnify 3s ease-in-out infinite;
+                    transform-origin: center;
+                  }
+                  @keyframes magnify {
+                    0%, 100% { transform: scale(0.9); }
+                    50% { transform: scale(1.5); }
+                  }
+                .: |
+                  ha-card {
+                    color: white;
+                    background: none;
+                    box-shadow: none;
+                    border: none;
+                  }

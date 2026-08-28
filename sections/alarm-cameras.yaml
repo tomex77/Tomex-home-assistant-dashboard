@@ -1,0 +1,62 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Alarm
+            secondary: >
+              {{ states('sensor.dashboard_alarm_status') | replace('_', ' ') |
+              title() }}
+            icon: mdi:security
+            badge_icon: >-
+              {% set s = states('alarm_control_panel.home_alarm') %}
+
+              {{ 'mdi:exclamation-thick' if s == 'disarmed' else 'mdi:check' if
+              s == 'armed_home' else 'mdi:check-bold' if s == 'armed_away' else
+              'none' }}
+            badge_color: >-
+              {% set s = states('alarm_control_panel.home_alarm') %}
+
+              {{ '#BF3530' if s == 'disarmed' else '#1d677c' if s ==
+              'armed_home' else '#367c1d' if s == 'armed_away' else '' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#alarm'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes heartbeat { 0%, 20%, 100% { transform: scale(0.8);
+                  } 10%, 30% { transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Cameras
+            secondary: '{{ states(''sensor.dashboard_camera_status'') }}'
+            icon: mdi:cctv
+            tap_action:
+              action: navigate
+              navigation_path: '#cams'
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_camera_status', 'visitor') %}
+              mdi:doorbell-video
+
+              {% elif state_attr('sensor.dashboard_camera_status', 'motion') %}
+              mdi:human-non-binary
+
+              {% endif %}
+            badge_color: '#BF3530'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 3s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.7); } 50% {
+                  transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }

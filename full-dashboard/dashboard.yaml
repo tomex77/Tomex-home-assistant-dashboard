@@ -1,0 +1,1641 @@
+kiosk_mode:
+  hide_header: true
+swipe_nav:
+  wrap: true
+  enable_mouse_swipe: true
+  animate_duration: 150
+  skip_tabs: 1
+  animate: swipe
+  swipe_amount: 18
+views:
+  - title: Home
+    theme: Caule Black Aqua
+    badges: []
+    cards:
+      - type: custom:layout-card
+        layout_type: custom:grid-layout
+        cards:
+          - type: custom:mushroom-template-card
+            primary: |
+              {% set time = now().hour %} 
+                {% if (time >= 18) %}
+                  Good Evening {{user}}!     
+                {% elif (time >= 12) %}
+                  Good Afternoon {{user}}! 
+                {% elif (time >= 5) %}
+                  Good Morning {{user}}! 
+                {% else %}
+                  Hello, {{user}}!      
+                {% endif %} 
+            secondary: >
+              It's {{states('sensor.current_day_and_date')}}
+            icon: ''
+            picture: |
+              {% if user == 'YOUR_HOME_ASSISTANT_USERNAME' %}
+                /local/profile_primary.png
+              {% else %}
+                /local/profile_default.png
+              {% endif %}
+            multiline_secondary: true
+            tap_action:
+              action: none
+            double_tap_action:
+              action: none
+            icon_tap_action:
+              action: none
+            hold_action:
+              action: none
+            features_position: bottom
+            card_mod:
+              style: |
+                  ha-card {
+                    color: white;
+                    background-color: rgba(0,0,0,0);
+                    box-shadow: none;
+                    border: none;
+                  }
+          - type: custom:mushroom-chips-card
+            alignment: end
+            chips:
+              - type: weather
+                entity: weather.home
+                tap_action:
+                  action: navigate
+                  navigation_path: '#weather'
+                hold_action:
+                  action: navigate
+                  navigation_path: '#weather'
+                show_conditions: true
+                show_temperature: true
+            card_mod:
+              style: |
+                ha-card {
+                  --chip-border-width: 0;
+                  --chip-background: none;
+                  --chip-height: 35px;
+                  --chip-padding: 12px;
+                  {% if states('weather.home') in ['unavailable', 'unknown'] %}
+                    display: none !important;
+                  {% endif %}
+                }
+        layout:
+          grid-template-columns: 61% 39%
+          grid-template-areas: |
+            "left right"
+          grid-gap: 0px
+      - type: custom:mushroom-template-card
+        secondary: >-
+          🗓️ {{states('sensor.next_holiday_sensor')}}
+          {{states('sensor.countdown_2')}} 
+        features_position: bottom
+        multiline_secondary: true
+        card_mod:
+          style: |
+            ha-card {
+              color: white;
+              --secondary-text-color: rgba(200,200,200,0.9);
+              background-color: rgba(0,0,0,0);
+              box-shadow: none;
+              border-style: hidden;
+              transform: scale(0.95);
+              margin-top: -39px;
+              margin-bottom: -16px;
+              margin-left: 44px; /* SHIFTS CARD RIGHT */
+            }
+      - type: picture-elements
+        image: /local/homeclosed2w.webp
+        elements:
+          - type: image
+            entity: binary_sensor.window1_overlay
+            image: /local/window1_overlay.png
+            style:
+              left: 50%
+              top: 50.1%
+              width: 85%
+              z-index: 3
+            card_mod:
+              style: |
+                :host {
+                  opacity: {{ 0.8 if is_state('binary_sensor.window1_overlay', 'on') else 0 }};
+                  transition: opacity 0.3s ease-in-out;
+                  will-change: opacity;
+                }
+          - type: image
+            entity: binary_sensor.window2_overlay
+            image: /local/window2_overlay.png
+            style:
+            style:
+              left: 50%
+              top: 50.1%
+              width: 85%
+              z-index: 3
+            card_mod:
+              style: |
+                :host {
+                  opacity: {{ 0.8 if is_state('binary_sensor.window2_overlay', 'on') else 0 }};
+                  transition: opacity 0.3s ease-in-out;
+                  will-change: opacity;
+                }
+          - type: image
+            entity: light.living_room_lights
+            image: /local/liv1.png
+            tap_action:
+              action: none
+            style:
+              left: 51%
+              top: 50%
+              width: 85%
+              z-index: 3
+            card_mod:
+              style: |
+                :host {
+                  opacity: {{ states('sensor.living_room_overlay_opacity') }};
+                  transition: opacity 0.5s ease-in-out;
+                  will-change: opacity;
+                }
+          - type: image
+            entity: light.garage
+            image: /local/garlighton1.png
+            tap_action:
+              action: toggle
+            style:
+              top: 50%
+              left: 50%
+              width: 100%
+              z-index: 3
+            card_mod:
+              style: |
+                :host {
+                  opacity: {{ states('sensor.garage_light_glow_style') | float(0) }};
+                  transition: opacity 0.4s ease-in-out;
+                  pointer-events: {{ 'auto' if is_state('light.garage', 'on') else 'none' }};
+                }
+          - type: state-label
+            entity: light.front_porch
+            label: ' '
+            style:
+              top: 50%
+              left: 31%
+              width: 20px
+              height: 20px
+              z-index: 3
+              color: transparent
+              font-size: 0px
+            card_mod:
+              style: |
+                :host {
+                  background: {{ states('sensor.front_porch_glow_style') }};
+                  transition: background 0.4s ease-in-out;
+                  filter: blur(2px);
+                  pointer-events: none;
+                }
+          - type: state-label
+            entity: light.driveway
+            label: ' '
+            style:
+              top: 28%
+              left: 65%
+              width: 25px
+              height: 35px
+              z-index: 3
+              color: transparent
+              font-size: 0px
+            card_mod:
+              style: |
+                :host {
+                  background: {{ states('sensor.driveway_light_glow_style') }};
+                  transition: background 0.4s ease-in-out;
+                  filter: blur(4px);
+                  pointer-events: none;
+                }
+          - type: state-label
+            entity: sensor.my_home_percentage_charged
+            style:
+              top: 77.6%
+              left: 74.8%
+              width: 0.7px
+              height: 25px
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: >
+                {% set batt = states('sensor.my_home_percentage_charged') |
+                float(0) %} {% set charging =
+                is_state('binary_sensor.my_home_battery_charging', 'on') %}
+                @keyframes pulse {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0.4; }
+                } :host {
+                  opacity: 1;
+                  background: {% if batt >= 66.5 %}#35cf02{% elif batt >= 33.3 %}#ffff00{% else %}#ff0000{% endif %};
+                  clip-path: inset({{ (100 - batt) | round(1) }}% 0 0 0);
+                  transition: clip-path 0.6s ease, background 0.6s ease;
+                  will-change: clip-path, background;
+                } {% if charging %} :host {
+                  animation: pulse 1.2s ease-in-out infinite;
+                } {% endif %}
+          - type: state-label
+            entity: sensor.my_home_percentage_charged
+            style:
+              top: 82.5%
+              left: 71.8%
+              width: 25px
+              height: 0.5px
+              rotate: 90deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                :host {
+                  background: #35cf02;
+                  animation: {{ states('sensor.battery_pulse_animation') }};
+                  will-change: opacity, background;
+                }
+          - type: state-label
+            entity: sensor.flow_2
+            style:
+              top: 6%
+              left: 62.5%
+              width: 11px
+              height: 1px
+              rotate: 270deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move 8s linear infinite;
+                  animation-delay: -0.5s;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: sensor.flow_2
+            tap_action:
+              action: none
+            name: panel_2
+            style:
+              top: 56%
+              left: 78%
+              width: 23px
+              height: 0.5px
+              rotate: 270deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move 8s linear infinite;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: sensor.solar_power_label
+            style:
+              top: 4%
+              left: 65%
+              font-weight: 700
+              font-size: 12px
+              z-index: 2
+            card_mod:
+              style: |
+                :host {
+                  color: {{ states('sensor.solar_status_color') }} !important;
+                }
+          - type: state-label
+            entity: sensor.load_power_label
+            style:
+              top: 66.5%
+              left: 95%
+              z-index: 2
+              font-size: 11px
+            card_mod:
+              style: |
+                :host {
+                  color: {{ states('sensor.load_power_color') }} !important;
+                }
+          - type: state-label
+            entity: sensor.grid_power_label
+            style:
+              top: 82.2%
+              left: 92.3%
+              z-index: 2
+              font-size: 11px
+            card_mod:
+              style: |
+                :host {
+                  color: {{ states('sensor.grid_power_color') }} !important;
+                  will-change: color;
+                }
+          - type: icon
+            icon: mdi:chart-bar
+            card_mod:
+              style: |
+                :host {
+                  --icon-color: #4D4747 !important;
+                  color: #4D4747 !important;
+                }
+                ha-state-icon {
+                  color: #4D4747 !important;
+                }
+            tap_action:
+              action: navigate
+              navigation_path: /YOUR_DASHBOARD_PATH/home3
+            hold_action:
+              action: none
+            style:
+              top: 4%
+              left: 93.9%
+              color: gray
+              z-index: 4
+          - type: image
+            entity: sensor.housecard
+            state_image:
+              g1_opening: /local/garage1opening.gif
+              g1_closing: /local/garage1closing.gif
+              g2_opening: /local/garage2opening.gif
+              g2_closing: /local/garage2closing.gif
+              both_open: /local/BOTHgaragedoorsopen.webp
+              both_closed: /local/bothclosed.webp
+              g1_open_g2_closed: /local/garage1open.webp
+              g2_open_g1_closed: /local/garage2open.webp
+              default: /local/homeclosed2w.webp
+            style:
+              top: 50%
+              left: 50%
+              width: 100%
+              z-index: 1
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+          - type: image
+            entity: weather.home
+            image: >-
+              data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 1 1'%3E%3C/svg%3E
+            style:
+              top: 50%
+              left: 50%
+              width: 100%
+              height: 100%
+              pointer-events: none
+              z-index: 3
+            card_mod:
+              style: |
+                :host {
+                  background-image: {{ states('sensor.weather_overlay_combined') }};
+                  background-repeat: no-repeat;
+                  {% set state = states('weather.home') %}
+                  {% if state in ['rainy', 'pouring', 'lightning-rainy'] %}
+                    background-position: center;
+                    background-size: cover;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.3;
+                  {% elif state == 'lightning' %}
+                    background-position: 100% -45%;
+                    background-size: 22% auto;
+                    transform: rotate(30deg);
+                    animation: lightning-flash 4s ease-in-out infinite;
+                    --target-opacity: 0.9;
+                  {% elif state == 'cloudy' %}
+                    background-position: 87% -2%, 23% 2%;
+                    background-size: 20% auto, 22% auto;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.2;
+                  {% elif state == 'partlycloudy' %}
+                    background-position: 23% 2%;
+                    background-size: 22% auto;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.3;
+                  {% elif state == 'fog' %}
+                    background-position: center;
+                    background-size: cover;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.3;
+                  {% elif state in ['snowy', 'snowy-rainy'] %}
+                    background-position: center 29%;
+                    background-size: 100% auto;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.2;
+                  {% elif state in ['sunny', 'exceptional'] %}
+                    background-position: 94% 5%;
+                    background-size: 15% auto;
+                    animation: weather-fade 2s ease-in-out forwards;
+                    --target-opacity: 0.5;
+                  {% else %}
+                    opacity: 0;
+                  {% endif %}
+                }
+                @keyframes weather-fade {
+                  0%   { opacity: 0; }
+                  100% { opacity: var(--target-opacity); }
+                }
+                @keyframes lightning-flash {
+                  0%, 2%, 4%, 100% { opacity: 0; }
+                  1%, 3% { opacity: var(--target-opacity); }
+                }
+          - type: custom:button-card
+            entity: sensor.my_home_percentage_charged
+            show_icon: false
+            show_name: false
+            show_state: true
+            tap_action: none
+            hold_action: none
+            style:
+              position: absolute
+              top: 10%
+              left: 93.9%
+              rotate: 0deg
+              opacity: 0.6
+              z-index: 2
+            styles:
+              card:
+                - background: none
+                - box-shadow: none
+                - border: none
+                - padding: 0
+                - overflow: visible
+              state:
+                - font-size: 13px
+                - font-weight: bold
+                - perspective: 500px
+                - transform-origin: left center
+                - text-shadow: 1px 1px 1px rgba(0,0,0,0.1)
+                - color: '#4D4747'
+            state_display: |
+              [[[ return Math.round(parseFloat(entity.state)); ]]]
+          - type: state-label
+            entity: binary_sensor.grid_to_battery
+            style:
+              top: 70.5%
+              left: 75%
+              width: 14px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.grid_battery_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move-reverse 8s linear infinite;
+                  animation-delay: 0s;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.grid_to_house
+            style:
+              top: 82.18%
+              left: 84.2%
+              width: 23px
+              height: 0.5px
+              rotate: 8deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_grid_export_flow_style') }};
+                  background-size: 350% 100%;
+                  animation:
+                    {% if is_state('binary_sensor.solar_to_grid','on') %}
+                      flow-move-reverse 8s linear infinite
+                    {% elif is_state('binary_sensor.grid_to_house','on') %}
+                      flow-move 8s linear infinite
+                    {% else %}
+                      none
+                    {% endif %};
+                  animation-delay:
+                    {% if is_state('binary_sensor.solar_to_grid','on') %}
+                      0.4s
+                    {% elif is_state('binary_sensor.grid_to_house','on') %}
+                      -0.4s
+                    {% else %}
+                      0s
+                    {% endif %};
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.grid_to_house
+            style:
+              top: 80.8%
+              left: 78.6%
+              width: 23px
+              height: 0.5px
+              rotate: 90deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_grid_export_flow_style') }};
+                  background-size: 350% 100%;
+                  animation:
+                    {% if is_state('binary_sensor.solar_to_grid','on') %}
+                      flow-move-reverse 8s linear infinite
+                    {% elif is_state('binary_sensor.grid_to_house','on') %}
+                      flow-move 8s linear infinite
+                    {% else %}
+                      none
+                    {% endif %};
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.solar_to_battery
+            attribute: friendly_name
+            style:
+              top: 70.5%
+              left: 74%
+              width: 19px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_battery_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move-reverse 8s linear infinite;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.solar_to_house
+            style:
+              top: 65.8%
+              left: 88.7%
+              width: 9px
+              height: 0.5px
+              rotate: 346deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_house_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move-reverse 8s linear infinite;
+                  animation-delay: 0.5s;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.solar_to_house
+            style:
+              top: 67.8%
+              left: 83.1%
+              width: 7px
+              height: 0.6px
+              rotate: 346deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.solar_house_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move-reverse 8s linear infinite;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.grid_to_house
+            tap_action:
+              action: none
+            style:
+              top: 69.2%
+              left: 81.7%
+              width: 7px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.grid_house_only_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: {{ 'flow-move 8s linear infinite' if is_state('binary_sensor.grid_to_house','on') else 'none' }};
+                  animation-delay: 0.5s;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          - type: state-label
+            entity: binary_sensor.battery_to_house
+            tap_action:
+              action: none
+            style:
+              top: 70.5%
+              left: 73.3%
+              width: 19px
+              height: 0.5px
+              rotate: 170deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.battery_house_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move 8s linear infinite;
+                }
+          - type: state-label
+            entity: binary_sensor.battery_to_house
+            tap_action:
+              action: none
+            style:
+              top: 68.4%
+              left: 82%
+              width: 6px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.battery_house_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move 8s linear infinite;
+                  animation-delay: -1s;
+                }
+          - type: state-label
+            entity: binary_sensor.battery_to_house
+            tap_action:
+              action: none
+            style:
+              top: 66.7%
+              left: 87.7%
+              width: 6px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.battery_house_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: flow-move 8s linear infinite;
+                  animation-delay: -2s;
+                }
+          - type: state-label
+            entity: binary_sensor.grid_to_house
+            tap_action:
+              action: none
+            style:
+              top: 67.3%
+              left: 87.5%
+              width: 7px
+              height: 0.5px
+              rotate: 166deg
+              z-index: 2
+              color: transparent
+            card_mod:
+              style: |
+                @keyframes flow-move {
+                  0%   { background-position: -350% 0%; }
+                  100% { background-position: 350% 0%; }
+                }
+                @keyframes flow-move-reverse {
+                  0%   { background-position: 350% 0%; }
+                  100% { background-position: -350% 0%; }
+                }
+                :host {
+                  background: {{ states('sensor.grid_house_only_flow_style') }};
+                  background-size: 350% 100%;
+                  animation: {{ 'flow-move 8s linear infinite' if is_state('binary_sensor.grid_to_house','on') else 'none' }};
+                  animation-delay: 1s;
+                  will-change: background-position;
+                  transform: translateZ(0);
+                  backface-visibility: hidden;
+                }
+          
+          - type: image
+            entity: weather.home
+            image: >-
+              data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'
+              viewBox='0 0 1 1'%3E%3C/svg%3E
+            style:
+              top: 50%
+              left: 50%
+              width: 100%
+              height: 100%
+              pointer-events: none
+              z-index: 5
+            card_mod:
+              style: |
+                :host {
+                  {% set state = states('weather.home') %}
+                  {% set x = range(0, 45) | random %}
+                  {% set y = range(-60, -30) | random %}
+                  {% if state in ['lightning', 'lightning-rainy'] %}
+                    background-image: url("/local/light.png");
+                    background-repeat: no-repeat;
+                    background-position: {{ x }}% {{ y }}%;
+                    background-size: {{ range(18, 28) | random }}% auto;
+                    transform: rotate({{ range(20, 45) | random }}deg);
+                    animation: lightning-flash {{ range(3, 7) | random }}s ease-in-out infinite;
+                    --target-opacity: 0.9;
+                    visibility: visible;
+                  {% else %}
+                    visibility: hidden;
+                    opacity: 0;
+                  {% endif %}
+                }
+                @keyframes lightning-flash {
+                  0%, 2%, 4%, 100% { opacity: 0; }
+                  1.2%, 3.2% { opacity: var(--target-opacity); }
+                }
+          - type: state-label
+            entity: sun.sun
+            label: ' '
+            style:
+              top: 70.9%
+              left: 81.9%
+              width: 2px
+              height: 2px
+              z-index: 2
+            card_mod:
+              style: |
+                :host {
+                  background-color: white;
+                  border-radius: 50%;
+                  animation: solid-flash 1.6s step-start infinite;
+                  pointer-events: none;
+                  font-size: 0px !important;
+                  color: transparent;
+                  line-height: 0;
+                }
+                @keyframes solid-flash {
+                  0%, 100% {
+                    opacity: 0;
+                    box-shadow: none;
+                  }
+                  50% {
+                    opacity: 0.6;
+                    box-shadow: 0 0 10px 2px white;
+                  }
+                }
+          - type: custom:button-card
+            show_name: true
+            name: Overview
+            show_icon: false
+            show_state: false
+            tap_action:
+              action: none
+            style:
+              position: absolute
+              top: 95.5%
+              left: 39%
+              width: 70%
+              z-index: 4
+            styles:
+              card:
+                - background: transparent
+                - border: none
+                - box-shadow: none
+                - padding: 0px
+                - margin: 12px 0px
+                - display: flex
+                - align-items: center
+              grid:
+                - grid-template-areas: '''n'''
+                - grid-template-columns: 1fr
+              name:
+                - justify-self: start
+                - font-family: '''DM Mono'', monospace'
+                - font-size: 15px
+                - letter-spacing: 0.15em
+                - color: rgba(228,233,229,0.5)
+                - padding-right: 12px
+                - position: relative
+                - white-space: nowrap
+            card_mod:
+              style: |
+                ha-card::after {
+                  content: "";
+                  position: absolute;
+                  left: 0;
+                  right: 0;
+                  top: 50%;
+                  height: 1px;
+                  background: linear-gradient(90deg, transparent, rgba(228,233,229,0.3) 20%, rgba(228,233,229,0.5) 50%, rgba(228,233,229,0.3) 80%, transparent);
+                  box-shadow: 0 0 6px rgba(228,233,229,0.2);
+                  z-index: 0;
+                }
+                ha-card {
+                  position: relative;
+                  overflow: visible !important;
+                }
+                .name {
+                  z-index: 1;
+                  position: relative;
+                  background: var(--ha-card-background, #13161d);
+                  padding-right: 12px !important;
+                }
+          - type: icon
+            icon: mdi:bell
+            entity: counter.notification
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+            style:
+              top: 95.5%
+              left: 78%
+              width: 12px
+              z-index: 4
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon {
+                    {% set count = state_attr('sensor.dashboard_home_notification', 'alert_count') | int(0) %}
+                    {% set notif = states('counter.notification')|int(0) %}
+                    {% set mail = states('counter.mailbox')|int(0) %}
+                    {% set trash = states('counter.trash_counter')|int(0) %}
+                    animation:
+                      {{ 'tilt-jiggle 0.5s infinite' if (notif > 0 or mail > 0 or trash > 0)
+                         else 'magnify 1.7s infinite' if count >= 1
+                         else 'none' }};
+                    transform-origin: center;
+                  }
+                  @keyframes magnify {
+                    0%, 100% { transform: scale(0.9); }
+                    50% { transform: scale(1.5); }
+                  }
+                  @keyframes tilt-jiggle {
+                    0%, 100% { transform: rotate(0deg); }
+                    25% { transform: rotate(24deg); }
+                    50% { transform: rotate(-24deg); }
+                    75% { transform: rotate(-12deg); }
+                  }
+                .: |
+                  :host {
+                    opacity: {{ 1 if states('counter.notification') | int(0) > 0 else 0 }};
+                    transition: opacity 0.3s ease-in-out;
+                    pointer-events: none;
+                    --mdc-icon-size: 17px;
+                  }
+                  ha-icon, ha-state-icon {
+                    color: rgba(228,233,229,0.5) !important;
+                    --icon-color: rgba(228,233,229,0.5) !important;
+                  }
+          - type: icon
+            icon: mdi:email
+            entity: counter.mailbox
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+            style:
+              top: 95.5%
+              left: 84%
+              width: 12px
+              z-index: 4
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 3s ease-in-out infinite;
+                  transform-origin: center; } @keyframes magnify { 0%, 100% {
+                  transform: scale(1); } 50% { transform: scale(1.2); } }
+                .: >
+                  :host { opacity: {{ 1 if states('counter.mailbox') | int(0) >
+                  0 else 0 }}; transition: opacity 0.3s ease-in-out;
+                  pointer-events: none; --mdc-icon-size: 17px; } ha-icon,
+                  ha-state-icon { color: rgba(228,233,229,0.5); --icon-color:
+                  white; }
+          - type: icon
+            icon: mdi:trash-can
+            entity: counter.trash_counter
+            tap_action:
+              action: none
+            hold_action:
+              action: none
+            style:
+              top: 95.5%
+              left: 90%
+              width: 12px
+              z-index: 4
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; } @keyframes heartbeat { 0%, 20%,
+                  100% { transform: scale(1); } 10%, 30% { transform:
+                  scale(1.2); } }
+                .: >
+                  :host { opacity: {{ 1 if states('counter.trash_counter') |
+                  int(0) > 0 else 0 }}; transition: opacity 0.3s ease-in-out;
+                  pointer-events: none; --mdc-icon-size: 17px; } ha-icon,
+                  ha-state-icon { color: rgba(228,233,229,0.5); --icon-color:
+                  white; }
+        card_mod:
+          style: |
+            ha-card {
+              background: none !important;
+              transform-origin: top center;
+              margin-bottom: -5px;
+              border: none !important;
+            }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Alarm
+            secondary: >
+              {{ states('sensor.dashboard_alarm_status') | replace('_', ' ') |
+              title() }}
+            icon: mdi:security
+            badge_icon: >-
+              {% set s = states('alarm_control_panel.home_alarm') %}
+
+              {{ 'mdi:exclamation-thick' if s == 'disarmed' else 'mdi:check' if
+              s == 'armed_home' else 'mdi:check-bold' if s == 'armed_away' else
+              'none' }}
+            badge_color: >-
+              {% set s = states('alarm_control_panel.home_alarm') %}
+
+              {{ '#BF3530' if s == 'disarmed' else '#1d677c' if s ==
+              'armed_home' else '#367c1d' if s == 'armed_away' else '' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#alarm'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes heartbeat { 0%, 20%, 100% { transform: scale(0.8);
+                  } 10%, 30% { transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Cameras
+            secondary: '{{ states(''sensor.dashboard_camera_status'') }}'
+            icon: mdi:cctv
+            tap_action:
+              action: navigate
+              navigation_path: '#cams'
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_camera_status', 'visitor') %}
+              mdi:doorbell-video
+
+              {% elif state_attr('sensor.dashboard_camera_status', 'motion') %}
+              mdi:human-non-binary
+
+              {% endif %}
+            badge_color: '#BF3530'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 3s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.7); } 50% {
+                  transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Lights | Switches
+            secondary: '{{ states(''sensor.dashboard_lights_status'') }}'
+            icon: mdi:light-recessed
+            tap_action:
+              action: navigate
+              navigation_path: '#lights'
+            hold_action:
+              action: navigate
+              navigation_path: /YOUR_DASHBOARD_PATH/lightson
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_lights_status', 'count') |
+              int(0) > 10 %} mdi:exclamation-thick {% endif %}
+            badge_color: >-
+              {{ '#985f1c' if state_attr('sensor.dashboard_lights_status',
+              'count')|int(0) > 10 else '' }}
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: tilt-shake 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes tilt-shake { 0%, 50%, 100% { transform:
+                  rotate(0deg); } 25% { transform: rotate(14deg); } 75% {
+                  transform: rotate(-14deg); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Climate
+            secondary: '{{ states(''sensor.dashboard_climate_status'') }}'
+            icon: mdi:thermostat
+            tap_action:
+              action: navigate
+              navigation_path: '#climate'
+            badge_icon: >-
+              {% set hvac = state_attr('sensor.dashboard_climate_status',
+              'hvac_total') | int(0) %}
+
+              {% if state_attr('sensor.dashboard_climate_status', 'fan_on') %}
+              mdi:fan
+
+              {% elif hvac > 0 %} mdi:numeric-{{ hvac }} {% endif %}
+            badge_color: >-
+              {% set hvac = state_attr('sensor.dashboard_climate_status',
+              'hvac_total') | int(0) %}
+
+              {% set exhaust = state_attr('sensor.dashboard_climate_status',
+              'exhaust_fan_on') %}
+
+              {% set regular = state_attr('sensor.dashboard_climate_status',
+              'regular_fan_on') %}
+
+              {% if exhaust and regular and hvac > 0 %} #1d677c
+
+              {% elif exhaust and regular %} #1d677c
+
+              {% elif regular and hvac > 0 %} #367c1d
+
+              {% elif regular %} #367c1d
+
+              {% elif exhaust and hvac > 0 %} #1d677c
+
+              {% elif exhaust %} #1d677c
+
+              {% elif hvac > 0 %} #985f1c
+
+              {% endif %}
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon {
+                    {% if state_attr('sensor.dashboard_climate_status', 'fan_on') %} animation: spin 1.2s linear infinite;
+                    {% elif state_attr('sensor.dashboard_climate_status', 'hvac_total') | int(0) > 0 %} animation: magnify 1.7s ease-in-out infinite;
+                    {% endif %}
+                    transform-origin: center;
+                  }
+
+                  @keyframes spin { 0% { transform: rotate(0deg); } 100% {
+                  transform: rotate(360deg); } }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Locks
+            secondary: '{{ states(''sensor.dashboard_locks_status'') }}'
+            icon: mdi:lock-smart
+            badge_icon: >-
+              mdi:numeric-{{ state_attr('sensor.dashboard_locks_status',
+              'unlocked_count') if state_attr('sensor.dashboard_locks_status',
+              'unlocked_count')|int(0) > 0 else 'none' }}
+            badge_color: >-
+              {{ '#BF3530' if state_attr('sensor.dashboard_locks_status',
+              'unlocked_count')|int(0) > 0 else '' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#locks'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 1.7s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Covers
+            secondary: '{{ states(''sensor.dashboard_covers_status'') }}'
+            icon: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open %} mdi:garage-open-variant
+
+              {% elif moving %} mdi:garage-alert-variant
+
+              {% else %} mdi:garage-variant {% endif %}
+            badge_icon: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open or moving %} mdi:exclamation-thick
+
+              {% else %} none {% endif %}
+            badge_color: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open %} #BF3530
+
+              {% elif moving %} #985f1c
+
+              {% else %} rgba(0,0,0,0) {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#garage'
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon { 
+                    animation: heartbeat 1.5s ease-in-out infinite; 
+                    transform-origin: center; 
+                  }
+                  @keyframes heartbeat { 
+                    0%, 20%, 100% { transform: scale(0.8); } 
+                    10%, 30% { transform: scale(1.1); } 
+                  }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Doors
+            secondary: '{{ states(''sensor.dashboard_doors_status'') }}'
+            icon: >-
+              {{ 'mdi:door-open' if state_attr('sensor.dashboard_doors_status',
+              'any_open')|bool else 'mdi:door-closed' }}
+            badge_icon: >-
+              {{ 'mdi:exclamation' if
+              state_attr('sensor.dashboard_doors_status',
+              'any_open')|bool(false) else 'none' }}
+            badge_color: >-
+              {{ '#BF3530' if state_attr('sensor.dashboard_doors_status',
+              'any_open')|bool(false) else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#door'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes heartbeat { 0%, 20%, 100% { transform: scale(0.8);
+                  } 10%, 30% { transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Sensors
+            secondary: '{{ states(''sensor.dashboard_sensors_status'') }}'
+            icon: mdi:leak
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_sensors_status',
+              'fire_alert')|bool(false) %} mdi:alert-circle
+
+              {% elif state_attr('sensor.dashboard_sensors_status',
+              'leak_count')|int(0) > 0 %} mdi:water
+
+              {% elif state_attr('sensor.dashboard_sensors_status',
+              'motion_detected')|bool(false) %} mdi:walk
+
+              {% else %} none {% endif %}
+            badge_color: >-
+              {% if state_attr('sensor.dashboard_sensors_status',
+              'fire_alert')|bool(false) or
+              state_attr('sensor.dashboard_sensors_status', 'leak_count')|int(0)
+              > 0 %} #BF3530
+
+              {% elif state_attr('sensor.dashboard_sensors_status',
+              'motion_detected')|bool(false) %} #985f1c
+
+              {% else %} rgba(0,0,0,0) {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#sensors'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: flip-hold 5s steps(1) infinite; }
+
+                  @keyframes flip-hold { 0%, 100% { transform: scaleX(1); } 50%
+                  { transform: scaleX(-1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Vacuum
+            secondary: '{{ states(''sensor.dashboard_vacuum_status'') }}'
+            icon: mdi:robot-vacuum
+            badge_icon: >-
+              {{ 'mdi:play' if state_attr('sensor.dashboard_vacuum_status',
+              'cleaning')|bool(false) else 'mdi:exclamation-thick' if
+              state_attr('sensor.dashboard_vacuum_status',
+              'offline')|bool(false) else 'none' }}
+            badge_color: >-
+              {{ '#367c1d' if state_attr('sensor.dashboard_vacuum_status',
+              'cleaning')|bool(false) else '#BF3530' if
+              state_attr('sensor.dashboard_vacuum_status',
+              'offline')|bool(false) else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#vacuum'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: heartbeat 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes heartbeat { 0%, 20%, 100% { transform: scale(0.8);
+                  } 10%, 30% { transform: scale(1.1); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Blinds
+            secondary: '{{ states(''sensor.dashboard_blinds_status'') }}'
+            icon: mdi:blinds
+            badge_icon: >-
+              {% set l1_open = state_attr('cover.window_blinds',
+              'current_position') | int(0) > 3 %} {% set l2_open =
+              is_state('cover.living_2_blinds', 'open') %}
+
+              {# Calculate count: true converts to 1, false to 0 #} {% set count
+              = (1 if l1_open else 0) + (1 if l2_open else 0) %}
+
+              {{ 'mdi:numeric-' ~ count if count > 0 else 'none' }}
+            badge_color: >-
+              {% set l1_open = state_attr('cover.window_blinds',
+              'current_position') | int(0) > 3 %} {% set l2_open =
+              is_state('cover.living_2_blinds', 'open') %} {% set count = (1 if
+              l1_open else 0) + (1 if l2_open else 0) %}
+
+              {{ '#985f1c' if count > 0 else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#blinds'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 1.7s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: 3D printer
+            secondary: >
+              {% set stage = states('sensor.your_3d_printer_current_stage')
+              %} {% set time =
+              states('sensor.your_3d_printer_remaining_time') | float(0) %}
+
+              {{ stage | replace('_', ' ') | title() }}
+
+              {% if stage == 'printing' %}
+                ({% if time < 2 %}{{ (time * 60) | round(0) }} min left{% else %}{{ time | round(1) }} hrs left{% endif %}){% endif %}
+            icon: mdi:printer-3d
+            badge_icon: |-
+              {% set s = states('sensor.your_3d_printer_current_stage') %}
+              {{ 'mdi:pencil' if s == 'printing' else 'none' }}
+            badge_color: |-
+              {% set s = states('sensor.your_3d_printer_current_stage') %}
+              {{ 'blue' if s == 'printing' else 'none' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#print'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: tilt-shake 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes tilt-shake { 0%, 50%, 100% { transform:
+                  rotate(-10deg); } 25% { transform: rotate(-30deg); } 75% {
+                  transform: rotate(-4deg); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Media
+            secondary: '{{ states(''sensor.dashboard_media_status'') }}'
+            icon: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool %}
+
+              {% if tvs > 0 %} mdi:television
+
+              {% elif spot %} mdi:spotify
+
+              {% else %} mdi:television
+
+              {% endif %}
+            badge_icon: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool(false) %}
+
+              {% if tvs > 0 and spot %} mdi:spotify
+
+              {% elif tvs > 0 or spot %} mdi:play
+
+              {% else %} none
+
+              {% endif %}
+            badge_color: >-
+              {% set tvs = state_attr('sensor.dashboard_media_status',
+              'tv_count') | int(0) %}
+
+              {% set spot = state_attr('sensor.dashboard_media_status',
+              'spotify_playing') | bool(false) %}
+
+              {% if tvs > 0 %} #1d677c
+
+              {% elif spot %} #367c1d
+
+              {% else %} rgba(0,0,0,0)
+
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#media'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon {
+                    animation: magnify 3s ease-in-out infinite;
+                    transform-origin: center;
+                  }
+                  @keyframes magnify {
+                    0%, 100% { transform: scale(0.7); }
+                    50% { transform: scale(1.1); }
+                  }
+                .: |
+                  ha-card {
+                    color: white;
+                    background: none;
+                    box-shadow: none;
+                    border: none;
+                  }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Laundry
+            secondary: '{{ states(''sensor.dashboard_laundry_status'') }}'
+            icon: mdi:washing-machine
+            badge_icon: >-
+              {% set count = state_attr('sensor.dashboard_laundry_status',
+              'active_count') | int(0) %}
+
+              {{ 'mdi:numeric-' ~ count if count > 0 else 'none' }}
+            badge_color: >-
+              {% if state_attr('sensor.dashboard_laundry_status', 'iron_on') |
+              bool(false) %} #BF3530
+
+              {% elif state_attr('sensor.dashboard_laundry_status',
+              'active_count') | int(0) > 0 %} #1d677c
+
+              {% else %} rgba(0,0,0,0) {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#laundry'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }
+          - type: custom:mushroom-template-card
+            primary: Bed
+            secondary: '{{ states(''sensor.dashboard_bed_status'') }}'
+            icon: mdi:bed
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_bed_status', 'occupied') |
+              bool(false) %} 
+                mdi:sleep
+              {% else %} 
+                none 
+              {% endif %}
+            badge_color: >-
+              {% if state_attr('sensor.dashboard_bed_status', 'occupied') |
+              bool(false) %}
+                #367c1d
+              {% else %}
+                rgba(0,0,0,0)
+              {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#bed'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon {
+                    animation: magnify 3s ease-in-out infinite;
+                    transform-origin: center;
+                  }
+                  @keyframes magnify {
+                    0%, 100% { transform: scale(0.9); }
+                    50% { transform: scale(1.5); }
+                  }
+                .: |
+                  ha-card {
+                    color: white;
+                    background: none;
+                    box-shadow: none;
+                    border: none;
+                  }
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Irrigation
+            secondary: '{{ states(''sensor.dashboard_irrigation_status'') }}'
+            icon: mdi:sprinkler-variant
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_irrigation_status', 'mowing') |
+              bool(false) %} mdi:mower
+
+              {% elif state_attr('sensor.dashboard_irrigation_status',
+              'watering') | bool(false) %} mdi:water
+
+              {% else %} none {% endif %}
+            badge_color: >-
+              {{ '#367c1d' if state_attr('sensor.dashboard_irrigation_status',
+              'mowing') | bool(false) else '#1d677c' if
+              state_attr('sensor.dashboard_irrigation_status', 'watering') |
+              bool(false) else 'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#lawn'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }
+          - type: custom:mushroom-template-card
+            primary: Network
+            secondary: >-
+              Speed: {{ states('sensor.speedtest_download')| float(0) | round(0)
+              }} Mb/s
+            icon: mdi:network
+            badge_icon: >-
+              {{ 'mdi:nas' if is_state('switch.wake_on_lan', 'on') else 'none'
+              }}
+            badge_color: >-
+              {{ '#1d677c' if is_state('switch.wake_on_lan', 'on') else
+              'rgba(0,0,0,0)' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#network'
+            features_position: bottom
+            card_mod:
+              style: >
+                ha-card { color: white; background: none; box-shadow: none;
+                border: none; }

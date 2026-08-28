@@ -1,0 +1,19 @@
+      - type: custom:mushroom-template-card
+        secondary: >-
+          🗓️ {{states('sensor.next_holiday_sensor')}}
+          {{states('sensor.countdown_2')}} 
+        features_position: bottom
+        multiline_secondary: true
+        card_mod:
+          style: |
+            ha-card {
+              color: white;
+              --secondary-text-color: rgba(200,200,200,0.9);
+              background-color: rgba(0,0,0,0);
+              box-shadow: none;
+              border-style: hidden;
+              transform: scale(0.95);
+              margin-top: -39px;
+              margin-bottom: -16px;
+              margin-left: 44px; /* SHIFTS CARD RIGHT */
+            }

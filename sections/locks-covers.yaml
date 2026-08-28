@@ -1,0 +1,82 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Locks
+            secondary: '{{ states(''sensor.dashboard_locks_status'') }}'
+            icon: mdi:lock-smart
+            badge_icon: >-
+              mdi:numeric-{{ state_attr('sensor.dashboard_locks_status',
+              'unlocked_count') if state_attr('sensor.dashboard_locks_status',
+              'unlocked_count')|int(0) > 0 else 'none' }}
+            badge_color: >-
+              {{ '#BF3530' if state_attr('sensor.dashboard_locks_status',
+              'unlocked_count')|int(0) > 0 else '' }}
+            tap_action:
+              action: navigate
+              navigation_path: '#locks'
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: magnify 1.7s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Covers
+            secondary: '{{ states(''sensor.dashboard_covers_status'') }}'
+            icon: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open %} mdi:garage-open-variant
+
+              {% elif moving %} mdi:garage-alert-variant
+
+              {% else %} mdi:garage-variant {% endif %}
+            badge_icon: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open or moving %} mdi:exclamation-thick
+
+              {% else %} none {% endif %}
+            badge_color: >-
+              {% set open = state_attr('sensor.dashboard_covers_status',
+              'any_open') | bool %}
+
+              {% set moving = state_attr('sensor.dashboard_covers_status',
+              'moving') | bool %}
+
+              {% if open %} #BF3530
+
+              {% elif moving %} #985f1c
+
+              {% else %} rgba(0,0,0,0) {% endif %}
+            tap_action:
+              action: navigate
+              navigation_path: '#garage'
+            card_mod:
+              style:
+                ha-icon$: |
+                  ha-svg-icon { 
+                    animation: heartbeat 1.5s ease-in-out infinite; 
+                    transform-origin: center; 
+                  }
+                  @keyframes heartbeat { 
+                    0%, 20%, 100% { transform: scale(0.8); } 
+                    10%, 30% { transform: scale(1.1); } 
+                  }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }

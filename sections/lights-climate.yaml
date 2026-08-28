@@ -1,0 +1,90 @@
+      - type: horizontal-stack
+        cards:
+          - type: custom:mushroom-template-card
+            primary: Lights | Switches
+            secondary: '{{ states(''sensor.dashboard_lights_status'') }}'
+            icon: mdi:light-recessed
+            tap_action:
+              action: navigate
+              navigation_path: '#lights'
+            hold_action:
+              action: navigate
+              navigation_path: /YOUR_DASHBOARD_PATH/lightson
+            badge_icon: >-
+              {% if state_attr('sensor.dashboard_lights_status', 'count') |
+              int(0) > 10 %} mdi:exclamation-thick {% endif %}
+            badge_color: >-
+              {{ '#985f1c' if state_attr('sensor.dashboard_lights_status',
+              'count')|int(0) > 10 else '' }}
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon { animation: tilt-shake 1.5s ease-in-out infinite;
+                  transform-origin: center; }
+
+                  @keyframes tilt-shake { 0%, 50%, 100% { transform:
+                  rotate(0deg); } 25% { transform: rotate(14deg); } 75% {
+                  transform: rotate(-14deg); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }
+          - type: custom:mushroom-template-card
+            primary: Climate
+            secondary: '{{ states(''sensor.dashboard_climate_status'') }}'
+            icon: mdi:thermostat
+            tap_action:
+              action: navigate
+              navigation_path: '#climate'
+            badge_icon: >-
+              {% set hvac = state_attr('sensor.dashboard_climate_status',
+              'hvac_total') | int(0) %}
+
+              {% if state_attr('sensor.dashboard_climate_status', 'fan_on') %}
+              mdi:fan
+
+              {% elif hvac > 0 %} mdi:numeric-{{ hvac }} {% endif %}
+            badge_color: >-
+              {% set hvac = state_attr('sensor.dashboard_climate_status',
+              'hvac_total') | int(0) %}
+
+              {% set exhaust = state_attr('sensor.dashboard_climate_status',
+              'exhaust_fan_on') %}
+
+              {% set regular = state_attr('sensor.dashboard_climate_status',
+              'regular_fan_on') %}
+
+              {% if exhaust and regular and hvac > 0 %} #1d677c
+
+              {% elif exhaust and regular %} #1d677c
+
+              {% elif regular and hvac > 0 %} #367c1d
+
+              {% elif regular %} #367c1d
+
+              {% elif exhaust and hvac > 0 %} #1d677c
+
+              {% elif exhaust %} #1d677c
+
+              {% elif hvac > 0 %} #985f1c
+
+              {% endif %}
+            features_position: bottom
+            card_mod:
+              style:
+                ha-icon$: >
+                  ha-svg-icon {
+                    {% if state_attr('sensor.dashboard_climate_status', 'fan_on') %} animation: spin 1.2s linear infinite;
+                    {% elif state_attr('sensor.dashboard_climate_status', 'hvac_total') | int(0) > 0 %} animation: magnify 1.7s ease-in-out infinite;
+                    {% endif %}
+                    transform-origin: center;
+                  }
+
+                  @keyframes spin { 0% { transform: rotate(0deg); } 100% {
+                  transform: rotate(360deg); } }
+
+                  @keyframes magnify { 0%, 100% { transform: scale(0.9); } 50% {
+                  transform: scale(1.5); } }
+                .: >
+                  ha-card { color: white; background: none; box-shadow: none;
+                  border: none; }

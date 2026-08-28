@@ -1,0 +1,16 @@
+{
+  "source": "Pasted code.yaml + preserved horizontal stacks from previous dashboard",
+  "combined_lines": 1641,
+  "top_level_cards": 11,
+  "horizontal_stack_rows": 8,
+  "entity_references": 65,
+  "likely_supporting_code_entities": 51,
+  "local_assets": 16,
+  "custom_types": [
+    "custom:button-card",
+    "custom:grid-layout",
+    "custom:layout-card",
+    "custom:mushroom-chips-card",
+    "custom:mushroom-template-card"
+  ]
+}
