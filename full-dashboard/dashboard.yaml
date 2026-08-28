@@ -124,7 +124,6 @@ views:
             entity: binary_sensor.window2_overlay
             image: /local/window2_overlay.png
             style:
-            style:
               left: 50%
               top: 50.1%
               width: 85%
@@ -252,7 +251,7 @@ views:
                   will-change: opacity, background;
                 }
           - type: state-label
-            entity: sensor.flow_2
+            entity: sun.sun
             style:
               top: 6%
               left: 62.5%
@@ -281,7 +280,7 @@ views:
                   backface-visibility: hidden;
                 }
           - type: state-label
-            entity: sensor.flow_2
+            entity: sun.sun
             tap_action:
               action: none
             name: panel_2
