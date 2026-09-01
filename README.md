@@ -35,6 +35,10 @@ Individual sections are also provided so you can use only the parts you want ins
 
 ## Start Here
 
+### Installation Guide
+
+[Step-by-step installation instructions](docs/INSTALLATION.md)
+
 ### Complete Overview Dashboard
 
 `overview-dashboard/dashboard.yaml`
