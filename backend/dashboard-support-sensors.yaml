@@ -1,0 +1,120 @@
+# Additional sanitized template sensors used by the Overview dashboard.
+# Merge the list under your existing `template:` configuration, or use this file in a package.
+
+template:
+  - sensor:
+      # Used by sensor.countdown_2.
+      - name: "Next Holiday Date"
+        default_entity_id: sensor.next_holiday_date_sensor
+        state: >-
+          {% set next_date = state_attr('calendar.holidays_in_united_states', 'start_time') %}
+          {% if next_date %}
+            {% set parsed_date = as_timestamp(next_date | replace('[-+][0-9][0-9]:[0-9][0-9]$', '')) %}
+            {% set formatted_date = parsed_date | timestamp_custom('%b %e') %}
+            {{ "Today" if formatted_date == now().strftime('%b %e') else formatted_date }}
+          {% else %}
+            No upcoming holidays.
+          {% endif %}
+
+      # Displays "Today 🎉", "in 1 day", or "in X days" next to the holiday name.
+      - name: "Countdown 2"
+        default_entity_id: sensor.countdown_2
+        state: >-
+          {% set date_str = states('sensor.next_holiday_date_sensor') %}
+          {% if date_str in ['unknown', 'unavailable', 'Today'] %}
+            {% if date_str == 'Today' %}
+              Today 🎉
+            {% else %}
+              unknown
+            {% endif %}
+          {% else %}
+            {% set this_year = now().year %}
+            {% set holiday = strptime(date_str ~ ' ' ~ this_year, '%b %d %Y') %}
+            {% if holiday.date() < now().date() %}
+              {% set holiday = strptime(date_str ~ ' ' ~ (this_year + 1), '%b %d %Y') %}
+            {% endif %}
+            {% set days = (holiday.date() - now().date()).days %}
+            {% if days == 0 %}
+              Today 🎉
+            {% elif days == 1 %}
+              in 1 day
+            {% else %}
+              in {{ days }} days
+            {% endif %}
+          {% endif %}
+
+      # Provides the state names used by the picture-elements state_image mapping.
+      - name: "Housecard"
+        default_entity_id: sensor.housecard
+        state: >-
+          {% set g1 = states('cover.garage1') %}
+          {% set g2 = states('cover.garage2') %}
+          {% if g1 == 'opening' %}
+            g1_opening
+          {% elif g2 == 'opening' %}
+            g2_opening
+          {% elif g1 == 'closing' %}
+            g1_closing
+          {% elif g2 == 'closing' %}
+            g2_closing
+          {% elif g1 == 'open' and g2 == 'open' %}
+            both_open
+          {% elif g1 == 'open' and g2 == 'closed' %}
+            g1_open_g2_closed
+          {% elif g2 == 'open' and g1 == 'closed' %}
+            g2_open_g1_closed
+          {% elif g1 == 'closed' and g2 == 'closed' %}
+            both_closed
+          {% else %}
+            default
+          {% endif %}
+
+      # Counts TVs/media players considered active by the Overview Media card.
+      # Replace tv_1..tv_8 with the media_player entities in your installation.
+      - name: "TV On"
+        default_entity_id: sensor.tvon
+        state: >-
+          {% set active_states = ['on', 'playing', 'paused', 'idle'] %}
+          {% set players = [
+            'media_player.tv_1',
+            'media_player.tv_2',
+            'media_player.tv_3',
+            'media_player.tv_4',
+            'media_player.tv_5',
+            'media_player.tv_6',
+            'media_player.tv_7',
+            'media_player.tv_8'
+          ] %}
+          {% set ns = namespace(active_count=0) %}
+          {% for player in players %}
+            {% if states(player) in active_states %}
+              {% set ns.active_count = ns.active_count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.active_count }}
+
+      # Human-readable list/count used by the Doors summary card.
+      - name: "# doors open"
+        default_entity_id: sensor.count_doors_open
+        icon: mdi:door
+        state: >-
+          {% set doors = expand(
+            'binary_sensor.front_door',
+            'binary_sensor.back_door',
+            'binary_sensor.shed',
+            'binary_sensor.balcony_door',
+            'binary_sensor.garage_door',
+            'binary_sensor.backyard_side_door'
+          )
+          | selectattr('state', 'eq', 'on')
+          | map(attribute='name')
+          | map('trim')
+          | list %}
+          {% set qty = doors | count %}
+          {% if qty == 0 %}
+            No doors open.
+          {% elif qty == 1 %}
+            {{ doors[0] }} is open.
+          {% else %}
+            {{ doors[:-1] | join(', ') }} and {{ doors[-1] }} are open.
+          {% endif %}

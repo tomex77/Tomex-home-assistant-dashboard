@@ -6,6 +6,7 @@ They are **not** the user's full Home Assistant configuration.
 ## Files
 
 - `base-dashboard-helpers.yaml` — date/holiday/count helpers and the two generic room/window overlay binary sensors.
+- `dashboard-support-sensors.yaml` — holiday countdown, house image-state selector, active-TV counter, and open-door summary.
 - `energy-flow-binary-sensors.yaml` — solar/grid/battery flow-direction binary sensors.
 - `energy-visualization-sensors.yaml` — colors, flow CSS strings, labels, weather overlay and light glow helpers.
 - `dashboard-status-sensors.yaml` — the summary sensors used by the horizontal-stack overview cards.
